@@ -1,4 +1,9 @@
-package entity;public class AuthorTable {
+package entity;
+
+import lombok.Data;
+
+@Data
+public class AuthorTable {
 
     private static long id;
     private static String firstName;

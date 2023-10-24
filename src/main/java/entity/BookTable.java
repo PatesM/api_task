@@ -1,5 +1,8 @@
 package entity;
 
+import lombok.Data;
+
+@Data
 public class BookTable {
 
     private static long id;
