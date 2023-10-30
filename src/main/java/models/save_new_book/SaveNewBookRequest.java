@@ -1,13 +1,15 @@
 package models.save_new_book;
 
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import entity.AuthorTable;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 @Data
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SaveNewBookRequest {
 
-    public static String bookTitle;
-    public static Object author;
-    public static long authorId;
+    private String bookTitle;
+    private AuthorTable author;
 }

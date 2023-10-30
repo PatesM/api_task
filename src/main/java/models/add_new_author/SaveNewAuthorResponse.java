@@ -1,11 +1,11 @@
 package models.add_new_author;
 
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class AddNewAuthorPositiveResponse {
+public class SaveNewAuthorResponse {
 
-    public static long authorId;
+    private long authorId;
 }

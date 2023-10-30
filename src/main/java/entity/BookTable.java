@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class BookTable {
 
-    private static long id;
-    private static String bookTitle;
-    private static String authorId;
+    private long id;
+    private String bookTitle;
+    private String authorId;
 }
