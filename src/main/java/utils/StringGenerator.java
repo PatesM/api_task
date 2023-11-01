@@ -7,9 +7,9 @@ import java.util.stream.Collectors;
 
 public class StringGenerator {
 
-    public static String generateString() {
+    public static String generateString(int stringSize) {
         String symbols = "abcdefghijklmnopqrstuvwxyz";
-        String random = new Random().ints(8, 0, symbols.length())
+        String random = new Random().ints(stringSize, 0, symbols.length())
                 .mapToObj(symbols::charAt)
                 .map(Object::toString)
                 .collect(Collectors.joining());

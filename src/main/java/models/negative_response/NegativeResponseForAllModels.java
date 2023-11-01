@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class NegativeResponseForAllModels {
 
-    private int errorCode;
+    private Integer errorCode;
     private String errorMessage;
     private String errorDetails;
 }

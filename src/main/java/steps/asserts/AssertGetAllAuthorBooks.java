@@ -7,7 +7,12 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AssertGetAllAuthorBooks {
+
     public static void assertionGettingAllAuthorBooks(List<GetAllAuthorBooksResponse> books) {
         assertThat(books).isNotEmpty();
+    }
+
+    public static void assertionGettingAllAuthorBooksEmptyList(List<GetAllAuthorBooksResponse> books) {
+        assertThat(books).isEmpty();
     }
 }

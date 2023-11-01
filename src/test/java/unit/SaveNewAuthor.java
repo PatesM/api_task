@@ -8,7 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import steps.asserts.AssertSaveNewAuthor;
 import steps.specifications.RequestSpecifications;
-import utils.StringGenerator;
+
+import static utils.StringGenerator.generateString;
 
 @Epic("Post method testing")
 @Story("Saving a new author")
@@ -18,10 +19,10 @@ public class SaveNewAuthor {
     @DisplayName("Saving a new author")
     @Description("Should save the new author and return the author id with a status code 201")
     public void savingNewAuthor() {
-        String firstName = StringGenerator.generateString();
-        String familyName = StringGenerator.generateString();
+        String firstName = generateString(8);
+        String familyName = generateString(8);
 
-        SaveNewAuthorResponse authorId = RequestSpecifications.requestSpecificationSaveNewAuthor(firstName, familyName);
-        AssertSaveNewAuthor.assertionSavingNewAuthor(authorId);
+        SaveNewAuthorResponse author = RequestSpecifications.requestSpecificationSaveNewAuthor(firstName, familyName, 201);
+        AssertSaveNewAuthor.assertionSavingNewAuthor(author);
     }
 }

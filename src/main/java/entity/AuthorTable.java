@@ -34,7 +34,7 @@ public class AuthorTable {
     @XmlElement(name = "second_name")
     private String secondName;
 
-    public AuthorTable(long id) {
+    public AuthorTable(Long id) {
         this.id = id;
     }
 }

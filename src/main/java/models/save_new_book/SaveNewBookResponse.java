@@ -7,5 +7,5 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SaveNewBookResponse {
 
-    private long bookId;
+    private Long bookId;
 }

@@ -5,15 +5,15 @@ import io.restassured.specification.ResponseSpecification;
 
 public class ResponseSpecifications {
 
-    public static ResponseSpecification responseSpecificationGet() {
+    public static ResponseSpecification responseSpecificationGet(int expectedStatusCode) {
         return new ResponseSpecBuilder()
-                .expectStatusCode(200)
+                .expectStatusCode(expectedStatusCode)
                 .build();
     }
 
-    public static ResponseSpecification responseSpecificationPost() {
+    public static ResponseSpecification responseSpecificationPost(int expectedStatusCode) {
         return new ResponseSpecBuilder()
-                .expectStatusCode(201)
+                .expectStatusCode(expectedStatusCode)
                 .build();
     }
 }

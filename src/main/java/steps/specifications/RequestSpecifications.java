@@ -21,68 +21,71 @@ import static io.restassured.RestAssured.given;
 
 public class RequestSpecifications {
 
-    public static RequestSpecification requestSpecification() {
+    public static RequestSpecification requestSpecification(String basePath) {
         return new RequestSpecBuilder()
                 .setBaseUri(Properties.BASE_URL)
+                .setBasePath(basePath)
                 .setContentType(ContentType.JSON)
                 .addFilter(new RequestLoggingFilter())
                 .addFilter(new ResponseLoggingFilter())
                 .build();
     }
 
-    public static RequestSpecification requestSpecificationXml() {
+    public static RequestSpecification requestSpecificationXml(String basePath) {
         return new RequestSpecBuilder()
                 .setBaseUri(Properties.BASE_URL)
+                .setBasePath(basePath)
                 .setContentType(ContentType.XML)
                 .addFilter(new RequestLoggingFilter())
                 .addFilter(new ResponseLoggingFilter())
                 .build();
     }
 
-    public static SaveNewAuthorResponse requestSpecificationSaveNewAuthor(String firstName, String familyName) {
+    public static SaveNewAuthorResponse requestSpecificationSaveNewAuthor(String firstName, String familyName, int expectedStatusCode) {
         SaveNewAuthorRequest author = new SaveNewAuthorRequest(firstName, familyName);
 
-        return given().spec(requestSpecification())
+        return given().spec(requestSpecification(Properties.POST_AUTHOR_URI))
                 .body(author)
                 .when()
-                .post(Properties.POST_AUTHOR_URI)
+                .post()
                 .then()
-                .spec(ResponseSpecifications.responseSpecificationPost())
+                .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode))
                 .extract().as(SaveNewAuthorResponse.class);
     }
 
-    public static SaveNewBookResponse requestSpecificationSaveNewBook(String bookTitle, long authorId) {
+    public static SaveNewBookResponse requestSpecificationSaveNewBook(String bookTitle, Long authorId, int expectedStatusCode) {
         AuthorTable author = new AuthorTable(authorId);
         SaveNewBookRequest book = new SaveNewBookRequest(bookTitle, author);
 
-        return given().spec(requestSpecification())
+        return given().spec(requestSpecification(Properties.POST_BOOK_URI))
                 .body(book)
                 .when()
-                .post(Properties.POST_BOOK_URI)
+                .post()
                 .then()
-                .spec(ResponseSpecifications.responseSpecificationPost())
+                .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode))
                 .extract().as(SaveNewBookResponse.class);
     }
 
-    public static List<GetAllAuthorBooksResponse> requestSpecificationGetAllAuthorBooks(String authorId) {
-        return given().spec(requestSpecification())
+    public static List<GetAllAuthorBooksResponse> requestSpecificationGetAllAuthorBooks(String authorId, int expectedStatusCode) {
+        return given().spec(requestSpecification(Properties.GET_BOOKS_URI))
+                .pathParam("id", authorId)
                 .when()
-                .get(Properties.GET_BOOKS_URI, authorId)
+                .get()
                 .then()
-                .spec(ResponseSpecifications.responseSpecificationGet())
+                .spec(ResponseSpecifications.responseSpecificationGet(expectedStatusCode))
                 .extract().jsonPath().getList(".", GetAllAuthorBooksResponse.class);
     }
 
-    public static GetAllAuthorBooksXmlResponse requestSpecificationGetAllAuthorBooksXml(int authorId) {
+    public static GetAllAuthorBooksXmlResponse requestSpecificationGetAllAuthorBooksXml(Integer authorId, int expectedStatusCode) {
         GetAllAuthorBooksXmlRequest author = new GetAllAuthorBooksXmlRequest();
         author.setAuthorId(authorId);
 
-        return given().spec(requestSpecificationXml())
+        return given().spec(requestSpecificationXml(Properties.POST_BOOKS_XML_URI))
                 .body(author)
                 .when()
-                .post(Properties.POST_BOOKS_XML_URI)
+                .post()
                 .then()
-                .spec(ResponseSpecifications.responseSpecificationGet())
+                .spec(ResponseSpecifications.responseSpecificationGet(expectedStatusCode))
                 .extract().as(GetAllAuthorBooksXmlResponse.class);
     }
 }

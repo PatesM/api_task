@@ -9,6 +9,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class AssertGetAllAuthorBooksXml {
 
     public static void assertionGettingAllAuthorBooksXml(GetAllAuthorBooksXmlResponse books) {
-        assertThat(books).isNotNull();
+        assertThat(books.getBooks()).isNotEmpty();
     }
+
+    public static void assertionGettingAllAuthorBooksXmlEmptyList(GetAllAuthorBooksXmlResponse books) {
+        assertThat(books.getBooks()).isEmpty();
+    }
+
 }
