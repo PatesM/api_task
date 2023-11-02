@@ -1,12 +1,13 @@
 package steps.asserts;
 
-import models.save_new_book.SaveNewBookResponse;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import models.save_new_book.SaveNewBookResponse;
 
 public class AssertSaveNewBook {
 
-    public static void assertionSavingNewBook(SaveNewBookResponse book) {
-        assertNotNull(book);
+    public static void assertionSavingNewBookPositiveResult(SaveNewBookResponse book,
+        Integer expectedId) {
+        assertThat(book.getBookId()).isEqualTo(expectedId.longValue());
     }
 }
