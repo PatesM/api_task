@@ -1,15 +1,20 @@
 package unit;
 
+import static steps.request_steps.ApiMethods.SaveNewAuthorApiMethod;
+import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
 import static utils.StringGenerator.generateString;
 
+import entity.AuthorTable;
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Story;
 import java.util.List;
 import java.util.Set;
+import models.add_new_author.SaveNewAuthorRequest;
 import models.add_new_author.SaveNewAuthorResponse;
 import models.get_all_author_books.GetAllAuthorBooksResponse;
 import models.negative_response.NegativeResponseForAllModels;
+import models.save_new_book.SaveNewBookRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -23,10 +28,9 @@ import steps.specifications.RequestSpecifications;
 @Story("Getting all the author's books")
 public class GetAllAuthorBooks {
 
-    private static String bookTitle;
+    private static SaveNewAuthorRequest authorRequest;
     private static Long authorId;
-    private static String firstName;
-    private static String familyName;
+    private static String bookTitle;
 
     @BeforeEach
     @Tag("SaveNewAuthorPrecondition")
@@ -36,17 +40,18 @@ public class GetAllAuthorBooks {
             return;
         }
 
-        firstName = generateString(8);
-        familyName = generateString(8);
+        authorRequest = new SaveNewAuthorRequest(generateString(8),
+            generateString(8));
 
-        SaveNewAuthorResponse author = RequestSpecifications.requestSpecificationSaveNewAuthor(
-            firstName, familyName, 201, "authorId", 1);
-        authorId = author.getAuthorId();
+        SaveNewAuthorResponse authorResponse = SaveNewAuthorApiMethod(authorRequest);
+        authorId = authorResponse.getAuthorId();
 
         if (testTags.stream().anyMatch(tag -> tag.equals("NotEmptyAuthorBooksList"))) {
-            bookTitle = generateString(20);
-            RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(bookTitle,
-                authorId, 201, "bookId", 1);
+            SaveNewBookRequest bookRequest = new SaveNewBookRequest(generateString(20),
+                new AuthorTable(authorId));
+            bookTitle = bookRequest.getBookTitle();
+
+            SaveNewBookApiMethod(bookRequest);
         }
     }
 
@@ -59,7 +64,7 @@ public class GetAllAuthorBooks {
         List<GetAllAuthorBooksResponse> books = RequestSpecifications.requestSpecificationGetAllAuthorBooksPositiveResult(
             String.valueOf(authorId), 200);
         AssertGetAllAuthorBooks.assertionGettingAllAuthorBooksPositiveResult(books, bookTitle,
-            authorId, firstName, familyName);
+            authorId, authorRequest);
     }
 
     @Test

@@ -1,13 +1,18 @@
 package unit;
 
+import static steps.request_steps.ApiMethods.SaveNewAuthorApiMethod;
+import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
 import static utils.StringGenerator.generateString;
 
+import entity.AuthorTable;
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Story;
 import java.util.Set;
+import models.add_new_author.SaveNewAuthorRequest;
 import models.add_new_author.SaveNewAuthorResponse;
 import models.negative_response.NegativeResponseForAllModels;
+import models.save_new_book.SaveNewBookRequest;
 import models.save_new_book.SaveNewBookResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +28,7 @@ import steps.specifications.RequestSpecifications;
 public class SaveNewBook {
 
     private static Long authorId;
-    private static String bookTitleDuplicate;
+    private static SaveNewBookResponse bookResponse;
 
     @BeforeEach
     @Tag("SaveNewAuthorPrecondition")
@@ -33,17 +38,17 @@ public class SaveNewBook {
             return;
         }
 
-        String firstName = generateString(8);
-        String familyName = generateString(8);
+        SaveNewAuthorRequest authorRequest = new SaveNewAuthorRequest(generateString(8),
+            generateString(8));
 
-        SaveNewAuthorResponse author = RequestSpecifications.requestSpecificationSaveNewAuthor(
-            firstName, familyName, 201, "authorId", 1);
-        authorId = author.getAuthorId();
+        SaveNewAuthorResponse authorResponse = SaveNewAuthorApiMethod(authorRequest);
+        authorId = authorResponse.getAuthorId();
 
         if (testTags.stream().anyMatch(tag -> tag.equals("SecondBook"))) {
-            bookTitleDuplicate = generateString(20);
-            RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(bookTitleDuplicate,
-                authorId, 201, "bookId", 1);
+            SaveNewBookRequest bookRequest = new SaveNewBookRequest(generateString(20),
+                new AuthorTable(authorId));
+
+            bookResponse = SaveNewBookApiMethod(bookRequest);
         }
     }
 
@@ -77,9 +82,12 @@ public class SaveNewBook {
     @DisplayName("Saving the author's second book")
     @Description("Should save the new author's book and return the book id with a status code 201")
     public void savingNewBookDuplicate() {
+        String bookTitle = generateString(20);
+
         SaveNewBookResponse book = RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(
-            bookTitleDuplicate, authorId, 201, "bookId", 2);
-        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book, 2);
+            bookTitle, authorId, 201, "bookId", (int) (bookResponse.getBookId() + 1));
+        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book,
+            (int) (bookResponse.getBookId() + 1));
     }
 
     @Test

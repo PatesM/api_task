@@ -18,6 +18,7 @@ import models.get_all_author_books_xml.GetAllAuthorBooksXmlResponse;
 import models.negative_response.NegativeResponseForAllModels;
 import models.save_new_book.SaveNewBookRequest;
 import models.save_new_book.SaveNewBookResponse;
+import steps.asserts.AssertNegativeResult;
 
 public class RequestSpecifications {
 
@@ -41,12 +42,12 @@ public class RequestSpecifications {
             .build();
     }
 
-    public static SaveNewAuthorResponse requestSpecificationSaveNewAuthor(String firstName,
-        String familyName, int expectedStatusCode, String bodyName, Integer expectedValue) {
-        SaveNewAuthorRequest author = new SaveNewAuthorRequest(firstName, familyName);
+    public static SaveNewAuthorResponse requestSpecificationSaveNewAuthor(
+        SaveNewAuthorRequest authorRequest, int expectedStatusCode, String bodyName,
+        Integer expectedValue) {
 
         return given().spec(requestSpecification(Properties.POST_AUTHOR_URI))
-            .body(author)
+            .body(authorRequest)
             .when()
             .post()
             .then()
@@ -72,9 +73,8 @@ public class RequestSpecifications {
     }
 
     public static NegativeResponseForAllModels requestSpecificationSaveNewBookNegativeResult(
-        String bookTitle,
-        Long authorId, int expectedStatusCode, Integer errorCode, String errorMessage,
-        String errorDetails) {
+        String bookTitle, Long authorId, int expectedStatusCode, Integer errorCode,
+        String errorMessage, String errorDetails) {
         AuthorTable author = new AuthorTable(authorId);
         SaveNewBookRequest book = new SaveNewBookRequest(bookTitle, author);
 
@@ -84,7 +84,7 @@ public class RequestSpecifications {
             .post()
             .then()
             .spec(
-                ResponseSpecifications.responseSpecificationNegativeResult(expectedStatusCode,
+                AssertNegativeResult.responseSpecificationNegativeResult(expectedStatusCode,
                     errorCode, errorMessage, errorDetails))
             .extract().as(NegativeResponseForAllModels.class);
     }

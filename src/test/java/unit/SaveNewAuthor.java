@@ -5,6 +5,7 @@ import static utils.StringGenerator.generateString;
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Story;
+import models.add_new_author.SaveNewAuthorRequest;
 import models.add_new_author.SaveNewAuthorResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,11 +20,11 @@ public class SaveNewAuthor {
     @DisplayName("Saving a new author")
     @Description("Should save the new author and return the author id with a status code 201")
     public void savingNewAuthor() {
-        String firstName = generateString(8);
-        String familyName = generateString(8);
+        SaveNewAuthorRequest authorRequest = new SaveNewAuthorRequest(generateString(8),
+            generateString(8));
 
-        SaveNewAuthorResponse author = RequestSpecifications.requestSpecificationSaveNewAuthor(
-            firstName, familyName, 201, "authorId", 1);
-        AssertSaveNewAuthor.assertionSavingNewAuthor(author, 1L);
+        SaveNewAuthorResponse authorResponse = RequestSpecifications.requestSpecificationSaveNewAuthor(
+            authorRequest, 201, "authorId", 1);
+        AssertSaveNewAuthor.assertionSavingNewAuthor(authorResponse, 1L);
     }
 }
