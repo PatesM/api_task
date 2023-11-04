@@ -2,6 +2,7 @@ package models.get_all_author_books;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import entity.AuthorTable;
+import java.util.Date;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -22,4 +23,6 @@ public class GetAllAuthorBooksResponse {
     @XmlElement(name = "book_title", required = true)
     private String bookTitle;
 
+    @XmlElement(name = "updated")
+    private Date updated;
 }

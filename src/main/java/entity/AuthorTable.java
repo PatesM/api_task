@@ -1,6 +1,7 @@
 package entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.Date;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -32,6 +33,9 @@ public class AuthorTable {
 
     @XmlElement(name = "second_name")
     private String secondName;
+
+    @XmlElement(name = "birth_date")
+    private String birthDate;
 
     public AuthorTable(Long id) {
         this.id = id;
