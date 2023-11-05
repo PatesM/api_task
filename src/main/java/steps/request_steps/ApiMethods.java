@@ -3,7 +3,7 @@ package steps.request_steps;
 import static io.restassured.RestAssured.given;
 import static steps.specifications.RequestSpecifications.requestSpecification;
 
-import configuration.Properties;
+import configurations.Properties;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;

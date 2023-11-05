@@ -3,7 +3,7 @@ package steps.specifications;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 
-import configuration.Properties;
+import configurations.Properties;
 import entity.AuthorTable;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
