@@ -11,7 +11,7 @@ import models.save_new_book.SaveNewBookResponse;
 
 public class ApiMethods {
 
-    public static SaveNewAuthorResponse SaveNewAuthorApiMethod(SaveNewAuthorRequest authorRequest) {
+    public static SaveNewAuthorResponse saveNewAuthorApiMethod(SaveNewAuthorRequest authorRequest) {
         return given().spec(requestSpecification(Properties.POST_AUTHOR_URI))
             .body(authorRequest)
             .when()
@@ -22,7 +22,7 @@ public class ApiMethods {
             .extract().as(SaveNewAuthorResponse.class);
     }
 
-    public static SaveNewBookResponse SaveNewBookApiMethod(SaveNewBookRequest bookRequest) {
+    public static SaveNewBookResponse saveNewBookApiMethod(SaveNewBookRequest bookRequest) {
         return given().spec(requestSpecification(Properties.POST_BOOK_URI))
             .body(bookRequest)
             .when()

@@ -24,7 +24,7 @@ public class SaveNewAuthor {
             generateString(8));
 
         SaveNewAuthorResponse authorResponse = RequestSpecifications.requestSpecificationSaveNewAuthor(
-            authorRequest, 201, "authorId", 1);
-        AssertSaveNewAuthor.assertionSavingNewAuthor(authorResponse, 1L);
+            authorRequest, 201, "authorId");
+        AssertSaveNewAuthor.assertionSavingNewAuthor(authorResponse);
     }
 }

@@ -1,7 +1,7 @@
 package unit;
 
-import static steps.request_steps.ApiMethods.SaveNewAuthorApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
+import static steps.request_steps.ApiMethods.saveNewAuthorApiMethod;
+import static steps.request_steps.ApiMethods.saveNewBookApiMethod;
 import static utils.StringGenerator.generateString;
 
 import entity.AuthorTable;
@@ -43,7 +43,7 @@ public class GetAllAuthorBooks {
         authorRequest = new SaveNewAuthorRequest(generateString(8),
             generateString(8));
 
-        SaveNewAuthorResponse authorResponse = SaveNewAuthorApiMethod(authorRequest);
+        SaveNewAuthorResponse authorResponse = saveNewAuthorApiMethod(authorRequest);
         authorId = authorResponse.getAuthorId();
 
         if (testTags.stream().anyMatch(tag -> tag.equals("NotEmptyAuthorBooksList"))) {
@@ -51,7 +51,7 @@ public class GetAllAuthorBooks {
                 new AuthorTable(authorId));
             bookTitle = bookRequest.getBookTitle();
 
-            SaveNewBookApiMethod(bookRequest);
+            saveNewBookApiMethod(bookRequest);
         }
     }
 

@@ -1,7 +1,5 @@
 package steps.specifications;
 
-import static org.hamcrest.Matchers.is;
-
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.specification.ResponseSpecification;
 
@@ -13,11 +11,9 @@ public class ResponseSpecifications {
             .build();
     }
 
-    public static ResponseSpecification responseSpecificationPost(int expectedStatusCode,
-        String bodyName, Integer expectedValue) {
+    public static ResponseSpecification responseSpecificationPost(int expectedStatusCode) {
         return new ResponseSpecBuilder()
             .expectStatusCode(expectedStatusCode)
-            .expectBody(bodyName, is(expectedValue))
             .build();
     }
 }

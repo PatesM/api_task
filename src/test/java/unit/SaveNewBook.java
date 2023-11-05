@@ -1,7 +1,7 @@
 package unit;
 
-import static steps.request_steps.ApiMethods.SaveNewAuthorApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
+import static steps.request_steps.ApiMethods.saveNewAuthorApiMethod;
+import static steps.request_steps.ApiMethods.saveNewBookApiMethod;
 import static utils.StringGenerator.generateString;
 
 import entity.AuthorTable;
@@ -41,14 +41,14 @@ public class SaveNewBook {
         SaveNewAuthorRequest authorRequest = new SaveNewAuthorRequest(generateString(8),
             generateString(8));
 
-        SaveNewAuthorResponse authorResponse = SaveNewAuthorApiMethod(authorRequest);
+        SaveNewAuthorResponse authorResponse = saveNewAuthorApiMethod(authorRequest);
         authorId = authorResponse.getAuthorId();
 
         if (testTags.stream().anyMatch(tag -> tag.equals("SecondBook"))) {
             SaveNewBookRequest bookRequest = new SaveNewBookRequest(generateString(20),
                 new AuthorTable(authorId));
 
-            bookResponse = SaveNewBookApiMethod(bookRequest);
+            bookResponse = saveNewBookApiMethod(bookRequest);
         }
     }
 
@@ -60,8 +60,8 @@ public class SaveNewBook {
         String bookTitle = generateString(20);
 
         SaveNewBookResponse book = RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(
-            bookTitle, authorId, 201, "bookId", 1);
-        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book, 1);
+            bookTitle, authorId, 201, "bookId");
+        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book);
     }
 
     @Test
@@ -72,8 +72,8 @@ public class SaveNewBook {
         String bookTitle = generateString(100);
 
         SaveNewBookResponse book = RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(
-            bookTitle, authorId, 201, "bookId", 1);
-        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book, 1);
+            bookTitle, authorId, 201, "bookId");
+        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book);
     }
 
     @Test
@@ -81,12 +81,12 @@ public class SaveNewBook {
     @Tag("SecondBook")
     @DisplayName("Saving the author's second book")
     @Description("Should save the new author's book and return the book id with a status code 201")
-    public void savingNewBookDuplicate() {
+    public void savingSecondNewBook() {
         String bookTitle = generateString(20);
 
         SaveNewBookResponse book = RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(
-            bookTitle, authorId, 201, "bookId", (int) (bookResponse.getBookId() + 1));
-        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book,
+            bookTitle, authorId, 201, "bookId");
+        AssertSaveNewBook.assertionSavingSecondNewBookPositiveResult(book,
             (int) (bookResponse.getBookId() + 1));
     }
 

@@ -1,6 +1,6 @@
 package steps.asserts;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import models.add_new_author.SaveNewAuthorRequest;
@@ -11,12 +11,12 @@ public class AssertGetAllAuthorBooksXml {
     public static void assertionGettingAllAuthorBooksXmlPositiveResult(
         GetAllAuthorBooksXmlResponse books, String bookTitle, Long authorId,
         SaveNewAuthorRequest authorRequest) {
-        assertThat(books.getBooks().get(0).getAuthor().getId()).isEqualTo(authorId);
-        assertThat(books.getBooks().get(0).getAuthor().getFirstName()).isEqualTo(
+        assertEquals(books.getBooks().get(0).getAuthor().getId(), authorId);
+        assertEquals(books.getBooks().get(0).getAuthor().getFirstName(),
             authorRequest.getFirstName());
-        assertThat(books.getBooks().get(0).getAuthor().getFamilyName()).isEqualTo(
+        assertEquals(books.getBooks().get(0).getAuthor().getFamilyName(),
             authorRequest.getFamilyName());
-        assertThat(books.getBooks().get(0).getBookTitle()).isEqualTo(bookTitle);
+        assertEquals(books.getBooks().get(0).getBookTitle(), bookTitle);
     }
 
     public static void assertionGettingAllAuthorBooksXmlEmptyList(

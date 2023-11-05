@@ -1,6 +1,6 @@
 package steps.asserts;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -12,11 +12,10 @@ public class AssertGetAllAuthorBooks {
     public static void assertionGettingAllAuthorBooksPositiveResult(
         List<GetAllAuthorBooksResponse> books, String bookTitle, Long authorId,
         SaveNewAuthorRequest authorRequest) {
-        assertThat(books.get(0).getBookTitle()).isEqualTo(bookTitle);
-        assertThat(books.get(0).getAuthor().getId()).isEqualTo(authorId);
-        assertThat(books.get(0).getAuthor().getFirstName()).isEqualTo(authorRequest.getFirstName());
-        assertThat(books.get(0).getAuthor().getFamilyName()).isEqualTo(
-            authorRequest.getFamilyName());
+        assertEquals(books.get(0).getBookTitle(), bookTitle);
+        assertEquals(books.get(0).getAuthor().getId(), authorId);
+        assertEquals(books.get(0).getAuthor().getFirstName(), authorRequest.getFirstName());
+        assertEquals(books.get(0).getAuthor().getFamilyName(), authorRequest.getFamilyName());
     }
 
     public static void assertionGettingAllAuthorBooksEmptyList(

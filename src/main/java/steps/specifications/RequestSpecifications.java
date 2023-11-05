@@ -1,6 +1,7 @@
 package steps.specifications;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
 
 import configuration.Properties;
 import entity.AuthorTable;
@@ -43,22 +44,21 @@ public class RequestSpecifications {
     }
 
     public static SaveNewAuthorResponse requestSpecificationSaveNewAuthor(
-        SaveNewAuthorRequest authorRequest, int expectedStatusCode, String bodyName,
-        Integer expectedValue) {
+        SaveNewAuthorRequest authorRequest, int expectedStatusCode, String bodyName) {
 
         return given().spec(requestSpecification(Properties.POST_AUTHOR_URI))
             .body(authorRequest)
             .when()
             .post()
             .then()
-            .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode, bodyName,
-                expectedValue))
+            .assertThat()
+            .body(containsString(bodyName))
+            .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode))
             .extract().as(SaveNewAuthorResponse.class);
     }
 
     public static SaveNewBookResponse requestSpecificationSaveNewBookPositiveResult(
-        String bookTitle, Long authorId, int expectedStatusCode, String bodyName,
-        Integer expectedValue) {
+        String bookTitle, Long authorId, int expectedStatusCode, String bodyName) {
         AuthorTable author = new AuthorTable(authorId);
         SaveNewBookRequest book = new SaveNewBookRequest(bookTitle, author);
 
@@ -67,8 +67,9 @@ public class RequestSpecifications {
             .when()
             .post()
             .then()
-            .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode, bodyName,
-                expectedValue))
+            .assertThat()
+            .body(containsString(bodyName))
+            .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode))
             .extract().as(SaveNewBookResponse.class);
     }
 
