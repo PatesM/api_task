@@ -81,7 +81,7 @@ public class SaveNewBook {
     @Tag("SecondBook")
     @DisplayName("Saving the author's second book")
     @Description("Should save the new author's book and return the book id with a status code 201")
-    public void savingSecondNewBook() {
+    public void savingNewBookSecondBook() {
         String bookTitle = generateString(20);
 
         SaveNewBookResponse book = RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(
