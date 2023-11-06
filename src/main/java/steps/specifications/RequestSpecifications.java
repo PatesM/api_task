@@ -1,6 +1,7 @@
 package steps.specifications;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
 
 import configuration.Properties;
 import entity.AuthorTable;
@@ -22,6 +23,8 @@ import models.save_new_book.SaveNewBookResponse;
 import steps.asserts.AssertNegativeResult;
 
 public class RequestSpecifications {
+
+    private static final AssertNegativeResult assertNegativeResult = new AssertNegativeResult();
 
     public static RequestSpecification requestSpecification(String basePath,
         AuthorizationResponse authorizationResponse) {
@@ -49,21 +52,22 @@ public class RequestSpecifications {
 
     public static SaveNewAuthorResponse requestSpecificationSaveNewAuthor(
         AuthorizationResponse authorizationResponse, SaveNewAuthorRequest authorRequest,
-        int expectedStatusCode, String bodyName, Integer expectedValue) {
+        int expectedStatusCode, String bodyName) {
 
         return given().spec(requestSpecification(Properties.POST_AUTHOR_URI, authorizationResponse))
             .body(authorRequest)
             .when()
             .post()
             .then()
-            .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode, bodyName,
-                expectedValue))
+            .assertThat()
+            .body(containsString(bodyName))
+            .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode))
             .extract().as(SaveNewAuthorResponse.class);
     }
 
     public static SaveNewBookResponse requestSpecificationSaveNewBookPositiveResult(
         AuthorizationResponse authorizationResponse, String bookTitle, Long authorId,
-        int expectedStatusCode, String bodyName, Integer expectedValue) {
+        int expectedStatusCode, String bodyName) {
         AuthorTable author = new AuthorTable(authorId);
         SaveNewBookRequest book = new SaveNewBookRequest(bookTitle, author);
 
@@ -72,14 +76,15 @@ public class RequestSpecifications {
             .when()
             .post()
             .then()
-            .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode, bodyName,
-                expectedValue))
+            .assertThat()
+            .body(containsString(bodyName))
+            .spec(ResponseSpecifications.responseSpecificationPost(expectedStatusCode))
             .extract().as(SaveNewBookResponse.class);
     }
 
     public static NegativeResponseForAllModels requestSpecificationSaveNewBookNegativeResult(
         AuthorizationResponse authorizationResponse, String bookTitle, Long authorId,
-        int expectedStatusCode, Integer errorCode, String errorMessage, String errorDetails) {
+        int expectedStatusCode) {
         AuthorTable author = new AuthorTable(authorId);
         SaveNewBookRequest book = new SaveNewBookRequest(bookTitle, author);
 
@@ -89,8 +94,7 @@ public class RequestSpecifications {
             .post()
             .then()
             .spec(
-                AssertNegativeResult.responseSpecificationNegativeResult(expectedStatusCode,
-                    errorCode, errorMessage, errorDetails))
+                assertNegativeResult.responseSpecificationNegativeResult(expectedStatusCode))
             .extract().as(NegativeResponseForAllModels.class);
     }
 

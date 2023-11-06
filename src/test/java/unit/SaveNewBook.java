@@ -1,8 +1,9 @@
 package unit;
 
-import static steps.request_steps.ApiMethods.AuthorizationApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewAuthorApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
+import static steps.request_steps.ApiMethods.authorizationApiMethod;
+import static steps.request_steps.ApiMethods.saveNewAuthorApiMethod;
+import static steps.request_steps.ApiMethods.saveNewBookApiMethod;
+import static steps.specifications.RequestSpecifications.requestSpecificationSaveNewBookNegativeResult;
 import static utils.StringGenerator.generateString;
 
 import entity.AuthorTable;
@@ -10,6 +11,7 @@ import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Story;
 import java.util.Set;
+import java.util.stream.Stream;
 import models.add_new_author.SaveNewAuthorRequest;
 import models.add_new_author.SaveNewAuthorResponse;
 import models.authorize_user.AuthorizationResponse;
@@ -22,6 +24,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import steps.asserts.AssertNegativeResult;
 import steps.asserts.AssertSaveNewBook;
 import steps.specifications.RequestSpecifications;
@@ -30,6 +35,8 @@ import steps.specifications.RequestSpecifications;
 @Story("Saving a new book")
 public class SaveNewBook {
 
+    private final AssertSaveNewBook assertSaveNewBook = new AssertSaveNewBook();
+    private final AssertNegativeResult assertNegativeResult = new AssertNegativeResult();
     private static AuthorizationResponse authorizationResponse;
     private static Long authorId;
     private static SaveNewBookResponse bookResponse;
@@ -37,7 +44,7 @@ public class SaveNewBook {
     @BeforeAll
     @Tag("AuthorizationPrecondition")
     static void setAuthorization() {
-        authorizationResponse = AuthorizationApiMethod();
+        authorizationResponse = authorizationApiMethod();
     }
 
     @BeforeEach
@@ -51,7 +58,7 @@ public class SaveNewBook {
         SaveNewAuthorRequest authorRequest = new SaveNewAuthorRequest(generateString(8),
             generateString(8));
 
-        SaveNewAuthorResponse authorResponse = SaveNewAuthorApiMethod(authorizationResponse,
+        SaveNewAuthorResponse authorResponse = saveNewAuthorApiMethod(authorizationResponse,
             authorRequest);
         authorId = authorResponse.getAuthorId();
 
@@ -59,7 +66,7 @@ public class SaveNewBook {
             SaveNewBookRequest bookRequest = new SaveNewBookRequest(generateString(20),
                 new AuthorTable(authorId));
 
-            bookResponse = SaveNewBookApiMethod(authorizationResponse, bookRequest);
+            bookResponse = saveNewBookApiMethod(authorizationResponse, bookRequest);
         }
     }
 
@@ -70,9 +77,11 @@ public class SaveNewBook {
     public void savingNewBookWithFilledFields() {
         String bookTitle = generateString(20);
 
-        SaveNewBookResponse book = RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(
-            authorizationResponse, bookTitle, authorId, 201, "bookId", 1);
-        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book, 1);
+        SaveNewBookResponse book = RequestSpecifications
+            .requestSpecificationSaveNewBookPositiveResult(authorizationResponse, bookTitle,
+                authorId, 201, "bookId");
+
+        assertSaveNewBook.assertionSavingNewBookPositiveResult(book);
     }
 
     @Test
@@ -82,9 +91,11 @@ public class SaveNewBook {
     public void savingNewBookWith100CharacterBookTitle() {
         String bookTitle = generateString(100);
 
-        SaveNewBookResponse book = RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(
-            authorizationResponse, bookTitle, authorId, 201, "bookId", 1);
-        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book, 1);
+        SaveNewBookResponse book = RequestSpecifications
+            .requestSpecificationSaveNewBookPositiveResult(authorizationResponse, bookTitle,
+                authorId, 201, "bookId");
+
+        assertSaveNewBook.assertionSavingNewBookPositiveResult(book);
     }
 
     @Test
@@ -92,84 +103,81 @@ public class SaveNewBook {
     @Tag("SecondBook")
     @DisplayName("Saving the author's second book")
     @Description("Should save the new author's book and return the book id with a status code 201")
-    public void savingNewBookDuplicate() {
+    public void savingNewBookSecondBook() {
         String bookTitle = generateString(20);
 
-        SaveNewBookResponse book = RequestSpecifications.requestSpecificationSaveNewBookPositiveResult(
-            authorizationResponse, bookTitle, authorId, 201, "bookId",
+        SaveNewBookResponse book = RequestSpecifications
+            .requestSpecificationSaveNewBookPositiveResult(authorizationResponse, bookTitle,
+                authorId, 201, "bookId");
+
+        assertSaveNewBook.assertionSavingSecondNewBookPositiveResult(book,
             (int) (bookResponse.getBookId() + 1));
-        AssertSaveNewBook.assertionSavingNewBookPositiveResult(book,
-            (int) (bookResponse.getBookId() + 1));
     }
 
-    @Test
+    static Stream<Arguments> argsProviderFactory() {
+        return Stream.of(
+            Arguments.of(
+                null,
+                null,
+                400,
+                1001,
+                "Валидация не пройдена",
+                "Не передан обязательный параметр: bookTitle",
+                "Saving a new book with null in parameters"
+            ),
+            Arguments.of(
+                null,
+                authorId,
+                400,
+                1001,
+                "Валидация не пройдена",
+                "Не передан обязательный параметр: bookTitle",
+                "Saving a new book with null in bookTitle"
+            ),
+            Arguments.of(
+                "",
+                authorId,
+                400,
+                1001,
+                "Валидация не пройдена",
+                "Некорректный размер поля bookTitle",
+                "Saving a new book with empty bookTitle"
+            ),
+            Arguments.of(
+                generateString(101),
+                authorId,
+                400,
+                1001,
+                "Валидация не пройдена",
+                "Некорректный размер поля bookTitle",
+                "Saving a new book with a 101-character bookTitle"
+            ),
+            Arguments.of(
+                generateString(20),
+                99999L,
+                409,
+                1001,
+                "Валидация не пройдена",
+                "Указанный автор не существует в таблице",
+                "Saving a new book by a non-existent author"
+            )
+        );
+    }
+
+    @ParameterizedTest(name = "{6}")
+    @MethodSource("argsProviderFactory")
     @Tag("NegativeTest")
-    @Tag("SkipBeforeEach")
-    @DisplayName("Saving a new book with null in parameters")
+    @DisplayName("Saving a new book with different request and response parameters")
     @Description("Should return error message and a status code 400")
-    public void savingNewBookWithNullInParameters() {
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationSaveNewBookNegativeResult(
-            authorizationResponse, null, null, 400, 1001, "Валидация не пройдена",
-            "Не передан обязательный параметр: bookTitle");
-        AssertNegativeResult.assertionNegativeResult(response, 1001,
-            "Валидация не пройдена",
-            "Не передан обязательный параметр: bookTitle");
-    }
+    public void savingNewBookParameterizedTest(String bookTitle, Long authorId,
+        int expectedStatusCode,
+        Integer expectedErrorCode, String expectedErrorMessage, String expectedErrorDetails,
+        String testName) {
 
-    @Test
-    @Tag("NegativeTest")
-    @DisplayName("Saving a new book with null in bookTitle")
-    @Description("Should return error message and a status code 400")
-    public void savingNewBookWithNullInBookTitle() {
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationSaveNewBookNegativeResult(
-            authorizationResponse, null, authorId, 400, 1001, "Валидация не пройдена",
-            "Не передан обязательный параметр: bookTitle");
-        AssertNegativeResult.assertionNegativeResult(response, 1001,
-            "Валидация не пройдена",
-            "Не передан обязательный параметр: bookTitle");
-    }
+        NegativeResponseForAllModels response = requestSpecificationSaveNewBookNegativeResult(
+            authorizationResponse, bookTitle, authorId, expectedStatusCode);
 
-    @Test
-    @Tag("NegativeTest")
-    @DisplayName("Saving a new book with empty bookTitle")
-    @Description("Should return error message and a status code 400")
-    public void savingNewBookWithEmptyBookTitle() {
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationSaveNewBookNegativeResult(
-            authorizationResponse, "", authorId, 400, 1001, "Валидация не пройдена",
-            "Некорректный размер поля bookTitle");
-        AssertNegativeResult.assertionNegativeResult(response, 1001,
-            "Валидация не пройдена",
-            "Некорректный размер поля bookTitle");
-    }
-
-    @Test
-    @Tag("NegativeTest")
-    @DisplayName("Saving a new book with a 101-character bookTitle")
-    @Description("Should return error message and a status code 400")
-    public void savingNewBookWith101CharacterBookTitle() {
-        String bookTitle = generateString(101);
-
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationSaveNewBookNegativeResult(
-            authorizationResponse, bookTitle, authorId, 400, 1001, "Валидация не пройдена",
-            "Некорректный размер поля bookTitle");
-        AssertNegativeResult.assertionNegativeResult(response, 1001,
-            "Валидация не пройдена",
-            "Некорректный размер поля bookTitle");
-    }
-
-    @Test
-    @Tag("NegativeTest")
-    @Tag("SkipBeforeEach")
-    @DisplayName("Saving a new book by a non-existent author")
-    @Description("Should save the new author's book and return the book id with a status code 201")
-    public void savingNewBookWithNonExistentAuthor() {
-        String bookTitle = generateString(20);
-
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationSaveNewBookNegativeResult(
-            authorizationResponse, bookTitle, 99999L, 409, 1001, "Валидация не пройдена",
-            "Указанный автор не существует в таблице");
-        AssertNegativeResult.assertionNegativeResult(response, 1001,
-            "Валидация не пройдена",
-            "Указанный автор не существует в таблице");
+        assertNegativeResult.assertionNegativeResult(response, expectedErrorCode,
+            expectedErrorMessage, expectedErrorDetails);
     }
 }

@@ -1,8 +1,8 @@
 package unit;
 
-import static steps.request_steps.ApiMethods.AuthorizationApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewAuthorApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
+import static steps.request_steps.ApiMethods.authorizationApiMethod;
+import static steps.request_steps.ApiMethods.saveNewAuthorApiMethod;
+import static steps.request_steps.ApiMethods.saveNewBookApiMethod;
 import static utils.DateGenerator.generateDate;
 import static utils.StringGenerator.generateString;
 
@@ -12,6 +12,7 @@ import io.qameta.allure.Epic;
 import io.qameta.allure.Story;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import models.add_new_author.SaveNewAuthorRequest;
 import models.add_new_author.SaveNewAuthorResponse;
 import models.authorize_user.AuthorizationResponse;
@@ -26,6 +27,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import steps.asserts.AssertGetAllAuthorBooks;
 import steps.asserts.AssertNegativeResult;
 import steps.specifications.RequestSpecifications;
@@ -34,6 +38,8 @@ import steps.specifications.RequestSpecifications;
 @Story("Getting all the author's books")
 public class GetAllAuthorBooks {
 
+    private final AssertGetAllAuthorBooks getAllAuthorBooks = new AssertGetAllAuthorBooks();
+    private final AssertNegativeResult assertNegativeResult = new AssertNegativeResult();
     private static AuthorizationResponse authorizationResponse;
     private static SaveNewAuthorRequest authorRequest;
     private static Long authorId;
@@ -43,7 +49,7 @@ public class GetAllAuthorBooks {
     @BeforeAll
     @Tag("AuthorizationPrecondition")
     static void setAuthorization() {
-        authorizationResponse = AuthorizationApiMethod();
+        authorizationResponse = authorizationApiMethod();
     }
 
     @BeforeEach
@@ -57,7 +63,7 @@ public class GetAllAuthorBooks {
         authorRequest = new SaveNewAuthorRequest(generateString(8), generateString(8),
             generateString(8), generateDate());
 
-        SaveNewAuthorResponse authorResponse = SaveNewAuthorApiMethod(authorizationResponse,
+        SaveNewAuthorResponse authorResponse = saveNewAuthorApiMethod(authorizationResponse,
             authorRequest);
         authorId = authorResponse.getAuthorId();
 
@@ -67,7 +73,7 @@ public class GetAllAuthorBooks {
             bookTitle = bookRequest.getBookTitle();
             timeStamp = new DateTime().toDateTime(DateTimeZone.UTC);
 
-            SaveNewBookApiMethod(authorizationResponse, bookRequest);
+            saveNewBookApiMethod(authorizationResponse, bookRequest);
         }
     }
 
@@ -77,10 +83,12 @@ public class GetAllAuthorBooks {
     @DisplayName("Getting all the author's books")
     @Description("Should return list books of the author with status code 200")
     public void gettingAllAuthorBooks() {
-        List<GetAllAuthorBooksResponse> books = RequestSpecifications.requestSpecificationGetAllAuthorBooksPositiveResult(
-            authorizationResponse, String.valueOf(authorId), 200);
-        AssertGetAllAuthorBooks.assertionGettingAllAuthorBooksPositiveResult(books, bookTitle,
-            timeStamp, authorId, authorRequest);
+        List<GetAllAuthorBooksResponse> books = RequestSpecifications
+            .requestSpecificationGetAllAuthorBooksPositiveResult(authorizationResponse,
+                String.valueOf(authorId), 200);
+
+        getAllAuthorBooks.assertionGettingAllAuthorBooksPositiveResult(books, bookTitle, timeStamp,
+            authorId, authorRequest);
     }
 
     @Test
@@ -88,34 +96,49 @@ public class GetAllAuthorBooks {
     @DisplayName("Getting all the author's books from empty list")
     @Description("Should return empty list books of the author with status code 200")
     public void gettingAllAuthorBooksEmptyList() {
-        List<GetAllAuthorBooksResponse> books = RequestSpecifications.requestSpecificationGetAllAuthorBooksPositiveResult(
-            authorizationResponse, String.valueOf(authorId), 200);
-        AssertGetAllAuthorBooks.assertionGettingAllAuthorBooksEmptyList(books);
+        List<GetAllAuthorBooksResponse> books = RequestSpecifications
+            .requestSpecificationGetAllAuthorBooksPositiveResult(authorizationResponse,
+                String.valueOf(authorId), 200);
+
+        getAllAuthorBooks.assertionGettingAllAuthorBooksEmptyList(books);
     }
 
-    @Test
-    @Tag("NegativeTest")
-    @Tag("SkipBeforeEach")
-    @DisplayName("Getting all the author's books by a non-existent author")
-    @Description("Should return error message and a status code 409")
-    public void gettingAllAuthorBooksNonExistentAuthor() {
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationGetAllAuthorBooksNegativeResult(
-            authorizationResponse, "99999", 400);
-        AssertNegativeResult.assertionNegativeResult(response, 1004,
-            "Валидация не пройдена",
-            "Указанный автор не существует в таблице");
+    static Stream<Arguments> argsProviderFactory() {
+        return Stream.of(
+            Arguments.of(
+                "99999",
+                400,
+                1004,
+                "Валидация не пройдена",
+                "Указанный автор не существует в таблице",
+                "Getting all the author's books by a non-existent author"
+            ),
+            Arguments.of(
+                " ",
+                400,
+                1001,
+                "Валидация не пройдена",
+                "Некорректный обязательный параметр",
+                "Getting all the author's books with empty authorId parameter"
+            )
+        );
     }
 
-    @Test
+    @ParameterizedTest(name = "{5}")
+    @MethodSource("argsProviderFactory")
     @Tag("NegativeTest")
-    @Tag("SkipBeforeEach")
-    @DisplayName("Getting all the author's books with empty authorId parameter")
+    @DisplayName("Getting all the author's books with different request and response parameters")
     @Description("Should return error message and a status code 400")
-    public void gettingAllAuthorBooksWithEmptyAuthorId() {
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationGetAllAuthorBooksNegativeResult(
-            authorizationResponse, " ", 400);
-        AssertNegativeResult.assertionNegativeResult(response, 1001,
-            "Валидация не пройдена",
-            "Некорректный обязательный параметр");
+    public void gettingAllAuthorBooksParameterizedTest(String authorId, int expectedStatusCode,
+        Integer expectedErrorCode, String expectedErrorMessage, String expectedErrorDetails,
+        String testName) {
+        NegativeResponseForAllModels response = RequestSpecifications
+            .requestSpecificationGetAllAuthorBooksNegativeResult(authorizationResponse, authorId,
+                expectedStatusCode);
+
+        assertNegativeResult.assertionNegativeResult(response,
+            expectedErrorCode,
+            expectedErrorMessage,
+            expectedErrorDetails);
     }
 }

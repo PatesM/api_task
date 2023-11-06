@@ -1,8 +1,10 @@
 package unit;
 
-import static steps.request_steps.ApiMethods.AuthorizationApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewAuthorApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
+import static steps.request_steps.ApiMethods.authorizationApiMethod;
+import static steps.request_steps.ApiMethods.saveNewAuthorApiMethod;
+import static steps.request_steps.ApiMethods.saveNewBookApiMethod;
+import static steps.specifications.RequestSpecifications.requestSpecificationGetAllAuthorBooksXmlNegativeResult;
+import static steps.specifications.RequestSpecifications.requestSpecificationGetAllAuthorBooksXmlPositiveResult;
 import static utils.DateGenerator.generateDate;
 import static utils.StringGenerator.generateString;
 
@@ -27,14 +29,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import steps.asserts.AssertGetAllAuthorBooksXml;
 import steps.asserts.AssertNegativeResult;
-import steps.specifications.RequestSpecifications;
 
 @Epic("Post method testing")
 @Story("Getting all the author's books in XML")
 public class GetAllAuthorBooksXml {
 
+    private final AssertGetAllAuthorBooksXml assertGetAllAuthorBooksXml =
+        new AssertGetAllAuthorBooksXml();
+    private final AssertNegativeResult assertNegativeResult = new AssertNegativeResult();
     private static AuthorizationResponse authorizationResponse;
-
     private static SaveNewAuthorRequest authorRequest;
     private static String bookTitle;
     private static Long authorId;
@@ -43,7 +46,7 @@ public class GetAllAuthorBooksXml {
     @BeforeAll
     @Tag("AuthorizationPrecondition")
     static void setAuthorization() {
-        authorizationResponse = AuthorizationApiMethod();
+        authorizationResponse = authorizationApiMethod();
     }
 
     @BeforeEach
@@ -57,7 +60,7 @@ public class GetAllAuthorBooksXml {
         authorRequest = new SaveNewAuthorRequest(generateString(8), generateString(8),
             generateString(8), generateDate());
 
-        SaveNewAuthorResponse authorResponse = SaveNewAuthorApiMethod(authorizationResponse,
+        SaveNewAuthorResponse authorResponse = saveNewAuthorApiMethod(authorizationResponse,
             authorRequest);
         authorId = authorResponse.getAuthorId();
 
@@ -67,7 +70,7 @@ public class GetAllAuthorBooksXml {
             bookTitle = bookRequest.getBookTitle();
             timeStamp = new DateTime().toDateTime(DateTimeZone.UTC);
 
-            SaveNewBookApiMethod(authorizationResponse, bookRequest);
+            saveNewBookApiMethod(authorizationResponse, bookRequest);
         }
     }
 
@@ -77,9 +80,11 @@ public class GetAllAuthorBooksXml {
     @DisplayName("Getting all the author's books in XML")
     @Description("Should return list books of the author in XML with status code 200")
     public void gettingAllAuthorBooksXml() {
-        GetAllAuthorBooksXmlResponse authorsBooks = RequestSpecifications.requestSpecificationGetAllAuthorBooksXmlPositiveResult(
-            Math.toIntExact(authorId), authorizationResponse, 200);
-        AssertGetAllAuthorBooksXml.assertionGettingAllAuthorBooksXmlPositiveResult(authorsBooks,
+        GetAllAuthorBooksXmlResponse authorsBooks =
+            requestSpecificationGetAllAuthorBooksXmlPositiveResult(Math.toIntExact(authorId),
+                authorizationResponse, 200);
+
+        assertGetAllAuthorBooksXml.assertionGettingAllAuthorBooksXmlPositiveResult(authorsBooks,
             bookTitle, timeStamp, authorId, authorRequest);
     }
 
@@ -88,9 +93,11 @@ public class GetAllAuthorBooksXml {
     @DisplayName("Getting all the author's books in XML from empty list")
     @Description("Should return empty list books of the author with status code 200")
     public void gettingAllAuthorBooksXmlEmptyList() {
-        GetAllAuthorBooksXmlResponse authorsBooks = RequestSpecifications.requestSpecificationGetAllAuthorBooksXmlPositiveResult(
-            Math.toIntExact(authorId), authorizationResponse, 200);
-        AssertGetAllAuthorBooksXml.assertionGettingAllAuthorBooksXmlEmptyList(authorsBooks);
+        GetAllAuthorBooksXmlResponse authorsBooks =
+            requestSpecificationGetAllAuthorBooksXmlPositiveResult(Math.toIntExact(authorId),
+                authorizationResponse, 200);
+
+        assertGetAllAuthorBooksXml.assertionGettingAllAuthorBooksXmlEmptyList(authorsBooks);
     }
 
     @Test
@@ -99,10 +106,11 @@ public class GetAllAuthorBooksXml {
     @DisplayName("Getting all the author's books in XML by a non-existent author")
     @Description("Should return error message and a status code 400")
     public void gettingAllAuthorBooksXmlNonExistentAuthor() {
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationGetAllAuthorBooksXmlNegativeResult(
-            authorizationResponse, "99999", 400);
-        AssertNegativeResult.assertionNegativeResult(response, 1004,
-            "Валидация не пройдена",
+        NegativeResponseForAllModels response =
+            requestSpecificationGetAllAuthorBooksXmlNegativeResult(authorizationResponse, "99999",
+                400);
+
+        assertNegativeResult.assertionNegativeResult(response, 1004, "Валидация не пройдена",
             "Указанный автор не существует в таблице");
     }
 
@@ -112,10 +120,9 @@ public class GetAllAuthorBooksXml {
     @DisplayName("Getting all the author's books in XML with empty authorId")
     @Description("Should return error message and a status code 400")
     public void gettingAllAuthorBooksXmlWithNullInAuthorId() {
-        NegativeResponseForAllModels response = RequestSpecifications.requestSpecificationGetAllAuthorBooksXmlNegativeResult(
-            authorizationResponse, " ", 400);
-        AssertNegativeResult.assertionNegativeResult(response, 1001,
-            "Валидация не пройдена",
+        NegativeResponseForAllModels response =
+            requestSpecificationGetAllAuthorBooksXmlNegativeResult(authorizationResponse, " ", 400);
+        assertNegativeResult.assertionNegativeResult(response, 1001, "Валидация не пройдена",
             "Не передан обязательный параметр: authorId");
     }
 }

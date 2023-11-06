@@ -16,7 +16,7 @@ import models.save_new_book.SaveNewBookResponse;
 
 public class ApiMethods {
 
-    public static AuthorizationResponse AuthorizationApiMethod() {
+    public static AuthorizationResponse authorizationApiMethod() {
         AuthorizationRequest authorization = new AuthorizationRequest("test_log", "123qweasd");
 
         return given()
@@ -34,7 +34,7 @@ public class ApiMethods {
             .extract().as(AuthorizationResponse.class);
     }
 
-    public static SaveNewAuthorResponse SaveNewAuthorApiMethod(
+    public static SaveNewAuthorResponse saveNewAuthorApiMethod(
         AuthorizationResponse authorizationResponse, SaveNewAuthorRequest authorRequest) {
         return given().spec(requestSpecification(Properties.POST_AUTHOR_URI, authorizationResponse))
             .body(authorRequest)
@@ -46,7 +46,7 @@ public class ApiMethods {
             .extract().as(SaveNewAuthorResponse.class);
     }
 
-    public static SaveNewBookResponse SaveNewBookApiMethod(
+    public static SaveNewBookResponse saveNewBookApiMethod(
         AuthorizationResponse authorizationResponse, SaveNewBookRequest bookRequest) {
         return given().spec(requestSpecification(Properties.POST_BOOK_URI, authorizationResponse))
             .body(bookRequest)

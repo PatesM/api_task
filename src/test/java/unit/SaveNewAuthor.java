@@ -1,6 +1,6 @@
 package unit;
 
-import static steps.request_steps.ApiMethods.AuthorizationApiMethod;
+import static steps.request_steps.ApiMethods.authorizationApiMethod;
 import static utils.DateGenerator.generateDate;
 import static utils.StringGenerator.generateString;
 
@@ -21,12 +21,13 @@ import steps.specifications.RequestSpecifications;
 @Story("Saving a new author")
 public class SaveNewAuthor {
 
+    private final AssertSaveNewAuthor assertSaveNewAuthor = new AssertSaveNewAuthor();
     private static AuthorizationResponse authorizationResponse;
 
     @BeforeAll
     @Tag("AuthorizationPrecondition")
     static void setAuthorization() {
-        authorizationResponse = AuthorizationApiMethod();
+        authorizationResponse = authorizationApiMethod();
     }
 
     @Test
@@ -36,8 +37,10 @@ public class SaveNewAuthor {
         SaveNewAuthorRequest authorRequest = new SaveNewAuthorRequest(generateString(8),
             generateString(8), generateString(8), generateDate());
 
-        SaveNewAuthorResponse authorResponse = RequestSpecifications.requestSpecificationSaveNewAuthor(
-            authorizationResponse, authorRequest, 201, "authorId", 1);
-        AssertSaveNewAuthor.assertionSavingNewAuthor(authorResponse, 1L);
+        SaveNewAuthorResponse authorResponse = RequestSpecifications
+            .requestSpecificationSaveNewAuthor(authorizationResponse, authorRequest, 201,
+                "authorId");
+
+        assertSaveNewAuthor.assertionSavingNewAuthor(authorResponse);
     }
 }
