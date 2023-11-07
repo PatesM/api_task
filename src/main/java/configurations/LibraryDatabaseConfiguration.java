@@ -1,9 +1,7 @@
 package configurations;
 
-import java.awt.print.Book;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -12,7 +10,7 @@ import org.hibernate.service.ServiceRegistry;
 public class LibraryDatabaseConfiguration {
 
     private static final SessionFactory sessionFactory = getSessionFactory();
-    public static Session session;
+    private static Session session;
 
     private LibraryDatabaseConfiguration() {
     }

@@ -1,12 +1,12 @@
 package entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -14,12 +14,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
-@RequiredArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @XmlRootElement(name = "author")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -48,7 +46,7 @@ public class AuthorTable {
     private String secondName;
 
     @XmlElement(name = "birth_date")
-    @Column(name = "berth_date")
+    @Column(name = "birth_date")
     private String birthDate;
 
     public AuthorTable(Long id) {

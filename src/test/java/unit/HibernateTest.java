@@ -1,56 +1,71 @@
 package unit;
 
-import static steps.request_steps.ApiMethods.AuthorizationApiMethod;
-import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
+import static steps.request_steps.ApiMethods.authorizationApiMethod;
+import static steps.request_steps.ApiMethods.saveNewAuthorApiMethod;
 import static utils.StringGenerator.generateString;
 
-import entity.AuthorTable;
 import entity.BookTable;
 import io.qameta.allure.Description;
 import java.util.List;
+import models.add_new_author.SaveNewAuthorRequest;
+import models.add_new_author.SaveNewAuthorResponse;
 import models.authorize_user.AuthorizationResponse;
-import models.save_new_book.SaveNewBookRequest;
-import models.save_new_book.SaveNewBookResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import steps.asserts.AssertSql;
 import steps.data_base_steps.SqlMethods;
 
 public class HibernateTest {
 
     private static AuthorizationResponse authorizationResponse;
-    private SqlMethods sqlMethods = new SqlMethods();
-    private static Long authorId;
-    private static List<SaveNewBookResponse> bookResponseList;
+    private static Long authorId = 1L;
+    private final SqlMethods sqlMethods = new SqlMethods();
+    private final AssertSql assertSql = new AssertSql();
 
     @BeforeAll
     @Tag("AuthorizationPrecondition")
     static void setAuthorization() {
-        authorizationResponse = AuthorizationApiMethod();
+        authorizationResponse = authorizationApiMethod();
     }
 
     @BeforeEach
-    @Tag("AuthorizationPrecondition")
-    void clearBookTable() {
-        sqlMethods.deleteAll();
+    void setup() {
+        SaveNewAuthorRequest authorRequest = new SaveNewAuthorRequest(generateString(8),
+            generateString(8));
+
+        SaveNewAuthorResponse authorResponse = saveNewAuthorApiMethod(authorizationResponse,
+            authorRequest);
+        authorId = authorResponse.getAuthorId();
     }
 
     @Test
     @Tag("PositiveTest")
     @DisplayName("Test for task 5.2.4")
-    @Description("Should save")
+    @Description("Should return second book")
     public void savingAndGettingAuthorBooks() {
-        SaveNewBookRequest bookRequestFirst = new SaveNewBookRequest(generateString(20),
-            new AuthorTable(authorId));
-        SaveNewBookRequest bookRequestSecond = new SaveNewBookRequest(generateString(20),
-            new AuthorTable(authorId));
+        String firstBook = "War and Peace";
+        String secondBook = "Anna Karenina";
 
-        bookResponseList.add(0, SaveNewBookApiMethod(authorizationResponse, bookRequestFirst));
-        bookResponseList.add(1, SaveNewBookApiMethod(authorizationResponse, bookRequestSecond));
+        sqlMethods.deleteAll();
 
-        List<BookTable> bookTableList = sqlMethods.findAll();
-        System.out.println(bookTableList);
+        sqlMethods.insertBook(firstBook, authorId);
+        sqlMethods.insertBook(secondBook, authorId);
+
+        List<BookTable> books = sqlMethods.findAll();
+        assertSql.assertListSize(books, 2);
+        System.out.println("Two books created: " + books);
+
+        List<BookTable> firstBookList = sqlMethods.findBook(firstBook);
+        assertSql.assertListSize(firstBookList, 1);
+        System.out.println("First book: " + firstBookList);
+
+        sqlMethods.deleteBook(firstBook);
+
+        List<BookTable> secondBookList = sqlMethods.findBook(secondBook);
+        assertSql.assertListSize(secondBookList, 1);
+        System.out.println("Second book: " + secondBookList);
     }
 }

@@ -11,7 +11,7 @@
     <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
     <property name="hibernate.connection.CharSet">utf8</property>
     <property name="hibernate.connection.characterEncoding">utf8</property>
-    <mapping class="entity.AuthorTable"/>
     <mapping class="entity.BookTable"/>
+    <mapping class="entity.AuthorTable"/>
   </session-factory>
 </hibernate-configuration>
