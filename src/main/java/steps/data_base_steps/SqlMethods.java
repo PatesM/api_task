@@ -1,42 +1,52 @@
 package steps.data_base_steps;
 
-import static configurations.LibraryDatabaseConfiguration.getCommit;
 import static configurations.LibraryDatabaseConfiguration.session;
 
 import entity.BookTable;
 import java.util.List;
+import org.hibernate.Transaction;
+import org.hibernate.query.NativeQuery;
 
 public class SqlMethods {
 
-    public static List<BookTable> findAll() {
+    public List<BookTable> findAll() {
         final String hql = """
-            SELECT b FROM book b
+            SELECT * FROM book
             """;
 
-        return session.createQuery(hql, BookTable.class).getResultList();
+        return session.createNativeQuery(hql, BookTable.class).getResultList();
     }
 
-    public static void deleteAll() {
+    public void deleteAll() {
         final String hql = """
             DELETE FROM book
             """;
 
-        getCommit(hql);
+        Transaction transaction = session.beginTransaction();
+        session.createNativeQuery(hql, BookTable.class).executeUpdate();
+        transaction.commit();
     }
 
-    public static void insertBook(String bookTitle, Long authorId) { // вставить переменные в запрос
+    public void insertBook(String bookTitle, Long authorId) {
         final String hql = """
-            INSERT INTO book (book_title, author_id) VALUES('Кладбище', 2)
+            INSERT INTO book (book_title, author_id) VALUES(:bookTitle, :authorId)
             """;
 
-        getCommit(hql);
+        Transaction transaction = session.beginTransaction();
+        NativeQuery<BookTable> nativeQuery = session.createNativeQuery(hql, BookTable.class);
+        nativeQuery.setParameter("bookTitle", bookTitle);
+        nativeQuery.setParameter("authorId", authorId);
+        nativeQuery.executeUpdate();
+        transaction.commit();
     }
 
-    public static List<BookTable> findBook(String bookTitle) {
+    public List<BookTable> findBook(String bookTitle) {
         final String hql = """
-            SELECT b FROM book b
+            SELECT * FROM book WHERE book_title = :bookTitle
             """;
 
-        return session.createQuery(hql, BookTable.class).getResultList();
+        NativeQuery<BookTable> nativeQuery = session.createNativeQuery(hql, BookTable.class);
+        nativeQuery.setParameter("bookTitle", bookTitle);
+        return nativeQuery.getResultList();
     }
 }

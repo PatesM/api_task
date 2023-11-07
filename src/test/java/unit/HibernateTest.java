@@ -1,7 +1,5 @@
 package unit;
 
-import static steps.data_base_steps.SqlMethods.deleteAll;
-import static steps.data_base_steps.SqlMethods.findAll;
 import static steps.request_steps.ApiMethods.AuthorizationApiMethod;
 import static steps.request_steps.ApiMethods.SaveNewBookApiMethod;
 import static utils.StringGenerator.generateString;
@@ -18,10 +16,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import steps.data_base_steps.SqlMethods;
 
 public class HibernateTest {
 
     private static AuthorizationResponse authorizationResponse;
+    private SqlMethods sqlMethods = new SqlMethods();
     private static Long authorId;
     private static List<SaveNewBookResponse> bookResponseList;
 
@@ -34,7 +34,7 @@ public class HibernateTest {
     @BeforeEach
     @Tag("AuthorizationPrecondition")
     void clearBookTable() {
-        deleteAll();
+        sqlMethods.deleteAll();
     }
 
     @Test
@@ -48,10 +48,9 @@ public class HibernateTest {
             new AuthorTable(authorId));
 
         bookResponseList.add(0, SaveNewBookApiMethod(authorizationResponse, bookRequestFirst));
-        bookResponseList.add(0, SaveNewBookApiMethod(authorizationResponse, bookRequestSecond));
+        bookResponseList.add(1, SaveNewBookApiMethod(authorizationResponse, bookRequestSecond));
 
-        List<BookTable> bookTableList = findAll();
+        List<BookTable> bookTableList = sqlMethods.findAll();
         System.out.println(bookTableList);
-
     }
 }

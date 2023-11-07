@@ -44,10 +44,4 @@ public class LibraryDatabaseConfiguration {
         }
         return session;
     }
-
-    public static void getCommit(String hql) {
-        Transaction transaction = session.beginTransaction();
-        session.createNativeQuery(hql, Book.class).executeUpdate();
-        transaction.commit();
-    }
 }
