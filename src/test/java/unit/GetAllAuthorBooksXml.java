@@ -13,6 +13,7 @@ import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Story;
 import java.util.Set;
+import java.util.stream.Stream;
 import models.add_new_author.SaveNewAuthorRequest;
 import models.add_new_author.SaveNewAuthorResponse;
 import models.authorize_user.AuthorizationResponse;
@@ -27,8 +28,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import steps.asserts.AssertGetAllAuthorBooksXml;
 import steps.asserts.AssertNegativeResult;
+import steps.asserts.AssertSql;
 
 @Epic("Post method testing")
 @Story("Getting all the author's books in XML")
@@ -36,6 +41,7 @@ public class GetAllAuthorBooksXml {
 
     private final AssertGetAllAuthorBooksXml assertGetAllAuthorBooksXml =
         new AssertGetAllAuthorBooksXml();
+    private final AssertSql assertSql = new AssertSql();
     private final AssertNegativeResult assertNegativeResult = new AssertNegativeResult();
     private static AuthorizationResponse authorizationResponse;
     private static SaveNewAuthorRequest authorRequest;
@@ -80,12 +86,13 @@ public class GetAllAuthorBooksXml {
     @DisplayName("Getting all the author's books in XML")
     @Description("Should return list books of the author in XML with status code 200")
     public void gettingAllAuthorBooksXml() {
-        GetAllAuthorBooksXmlResponse authorsBooks =
+        GetAllAuthorBooksXmlResponse books =
             requestSpecificationGetAllAuthorBooksXmlPositiveResult(Math.toIntExact(authorId),
                 authorizationResponse, 200);
 
-        assertGetAllAuthorBooksXml.assertionGettingAllAuthorBooksXmlPositiveResult(authorsBooks,
+        assertGetAllAuthorBooksXml.assertionGettingAllAuthorBooksXmlPositiveResult(books,
             bookTitle, timeStamp, authorId, authorRequest);
+        assertSql.assertBookListExistXml(books, authorId, timeStamp);
     }
 
     @Test
@@ -93,36 +100,46 @@ public class GetAllAuthorBooksXml {
     @DisplayName("Getting all the author's books in XML from empty list")
     @Description("Should return empty list books of the author with status code 200")
     public void gettingAllAuthorBooksXmlEmptyList() {
-        GetAllAuthorBooksXmlResponse authorsBooks =
+        GetAllAuthorBooksXmlResponse books =
             requestSpecificationGetAllAuthorBooksXmlPositiveResult(Math.toIntExact(authorId),
                 authorizationResponse, 200);
 
-        assertGetAllAuthorBooksXml.assertionGettingAllAuthorBooksXmlEmptyList(authorsBooks);
+        assertGetAllAuthorBooksXml.assertionGettingAllAuthorBooksXmlEmptyList(books);
+        assertSql.assertBookListExistXml(books, authorId, timeStamp);
     }
 
-    @Test
-    @Tag("NegativeTest")
-    @Tag("SkipBeforeEach")
-    @DisplayName("Getting all the author's books in XML by a non-existent author")
-    @Description("Should return error message and a status code 400")
-    public void gettingAllAuthorBooksXmlNonExistentAuthor() {
-        NegativeResponseForAllModels response =
-            requestSpecificationGetAllAuthorBooksXmlNegativeResult(authorizationResponse, "99999",
-                400);
-
-        assertNegativeResult.assertionNegativeResult(response, 1004, "Валидация не пройдена",
-            "Указанный автор не существует в таблице");
+    static Stream<Arguments> argsProviderFactory() {
+        return Stream.of(
+            Arguments.of(
+                "99999",
+                400,
+                1004,
+                "Указанный автор не существует в таблице",
+                "Getting all the author's books in XML by a non-existent author"
+            ),
+            Arguments.of(
+                " ",
+                400,
+                1001,
+                "Не передан обязательный параметр: authorId",
+                "Getting all the author's books in XML with empty authorId"
+            )
+        );
     }
 
-    @Test
+    @ParameterizedTest(name = "{4}")
+    @MethodSource("argsProviderFactory")
     @Tag("NegativeTest")
-    @Tag("SkipBeforeEach")
-    @DisplayName("Getting all the author's books in XML with empty authorId")
+    @DisplayName("Getting all the author's books in XML with different request and response parameters")
     @Description("Should return error message and a status code 400")
-    public void gettingAllAuthorBooksXmlWithNullInAuthorId() {
+    public void gettingAllAuthorBooksParameterizedTest(String authorId, int expectedStatusCode,
+        Integer expectedErrorCode, String expectedErrorDetails, String testName) {
         NegativeResponseForAllModels response =
-            requestSpecificationGetAllAuthorBooksXmlNegativeResult(authorizationResponse, " ", 400);
-        assertNegativeResult.assertionNegativeResult(response, 1001, "Валидация не пройдена",
-            "Не передан обязательный параметр: authorId");
+            requestSpecificationGetAllAuthorBooksXmlNegativeResult(authorizationResponse, authorId,
+                expectedStatusCode);
+
+        assertNegativeResult.assertionNegativeResultForGetAllAuthorBooks(response,
+            expectedErrorCode, expectedErrorDetails);
+        assertSql.assertBookListEmpty(Long.valueOf(authorId));
     }
 }

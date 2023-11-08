@@ -4,6 +4,7 @@ import static steps.request_steps.ApiMethods.authorizationApiMethod;
 import static steps.request_steps.ApiMethods.saveNewAuthorApiMethod;
 import static steps.request_steps.ApiMethods.saveNewBookApiMethod;
 import static steps.specifications.RequestSpecifications.requestSpecificationSaveNewBookNegativeResult;
+import static steps.specifications.RequestSpecifications.requestSpecificationSaveNewBookPositiveResult;
 import static utils.StringGenerator.generateString;
 
 import entity.AuthorTable;
@@ -29,13 +30,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import steps.asserts.AssertNegativeResult;
 import steps.asserts.AssertSaveNewBook;
-import steps.specifications.RequestSpecifications;
+import steps.asserts.AssertSql;
 
 @Epic("Post method testing")
 @Story("Saving a new book")
 public class SaveNewBook {
 
     private final AssertSaveNewBook assertSaveNewBook = new AssertSaveNewBook();
+    private final AssertSql assertSql = new AssertSql();
     private final AssertNegativeResult assertNegativeResult = new AssertNegativeResult();
     private static AuthorizationResponse authorizationResponse;
     private static Long authorId;
@@ -77,11 +79,11 @@ public class SaveNewBook {
     public void savingNewBookWithFilledFields() {
         String bookTitle = generateString(20);
 
-        SaveNewBookResponse book = RequestSpecifications
-            .requestSpecificationSaveNewBookPositiveResult(authorizationResponse, bookTitle,
-                authorId, 201, "bookId");
+        SaveNewBookResponse book = requestSpecificationSaveNewBookPositiveResult(
+            authorizationResponse, bookTitle, authorId, 201, "bookId");
 
         assertSaveNewBook.assertionSavingNewBookPositiveResult(book);
+        assertSql.assertBookExist(bookTitle, authorId, book.getBookId());
     }
 
     @Test
@@ -91,11 +93,11 @@ public class SaveNewBook {
     public void savingNewBookWith100CharacterBookTitle() {
         String bookTitle = generateString(100);
 
-        SaveNewBookResponse book = RequestSpecifications
-            .requestSpecificationSaveNewBookPositiveResult(authorizationResponse, bookTitle,
-                authorId, 201, "bookId");
+        SaveNewBookResponse book = requestSpecificationSaveNewBookPositiveResult(
+            authorizationResponse, bookTitle, authorId, 201, "bookId");
 
         assertSaveNewBook.assertionSavingNewBookPositiveResult(book);
+        assertSql.assertBookExist(bookTitle, authorId, book.getBookId());
     }
 
     @Test
@@ -106,12 +108,12 @@ public class SaveNewBook {
     public void savingNewBookSecondBook() {
         String bookTitle = generateString(20);
 
-        SaveNewBookResponse book = RequestSpecifications
-            .requestSpecificationSaveNewBookPositiveResult(authorizationResponse, bookTitle,
-                authorId, 201, "bookId");
+        SaveNewBookResponse book = requestSpecificationSaveNewBookPositiveResult(
+            authorizationResponse, bookTitle, authorId, 201, "bookId");
 
         assertSaveNewBook.assertionSavingSecondNewBookPositiveResult(book,
             (int) (bookResponse.getBookId() + 1));
+        assertSql.assertBookExist(bookTitle, authorId, book.getBookId());
     }
 
     static Stream<Arguments> argsProviderFactory() {
@@ -120,8 +122,6 @@ public class SaveNewBook {
                 null,
                 null,
                 400,
-                1001,
-                "Валидация не пройдена",
                 "Не передан обязательный параметр: bookTitle",
                 "Saving a new book with null in parameters"
             ),
@@ -129,8 +129,6 @@ public class SaveNewBook {
                 null,
                 authorId,
                 400,
-                1001,
-                "Валидация не пройдена",
                 "Не передан обязательный параметр: bookTitle",
                 "Saving a new book with null in bookTitle"
             ),
@@ -138,8 +136,6 @@ public class SaveNewBook {
                 "",
                 authorId,
                 400,
-                1001,
-                "Валидация не пройдена",
                 "Некорректный размер поля bookTitle",
                 "Saving a new book with empty bookTitle"
             ),
@@ -147,8 +143,6 @@ public class SaveNewBook {
                 generateString(101),
                 authorId,
                 400,
-                1001,
-                "Валидация не пройдена",
                 "Некорректный размер поля bookTitle",
                 "Saving a new book with a 101-character bookTitle"
             ),
@@ -156,28 +150,24 @@ public class SaveNewBook {
                 generateString(20),
                 99999L,
                 409,
-                1001,
-                "Валидация не пройдена",
                 "Указанный автор не существует в таблице",
                 "Saving a new book by a non-existent author"
             )
         );
     }
 
-    @ParameterizedTest(name = "{6}")
+    @ParameterizedTest(name = "{4}")
     @MethodSource("argsProviderFactory")
     @Tag("NegativeTest")
     @DisplayName("Saving a new book with different request and response parameters")
     @Description("Should return error message and a status code 400")
     public void savingNewBookParameterizedTest(String bookTitle, Long authorId,
-        int expectedStatusCode,
-        Integer expectedErrorCode, String expectedErrorMessage, String expectedErrorDetails,
-        String testName) {
+        int expectedStatusCode, String expectedErrorDetails, String testName) {
 
         NegativeResponseForAllModels response = requestSpecificationSaveNewBookNegativeResult(
             authorizationResponse, bookTitle, authorId, expectedStatusCode);
 
-        assertNegativeResult.assertionNegativeResult(response, expectedErrorCode,
-            expectedErrorMessage, expectedErrorDetails);
+        assertNegativeResult.assertionNegativeResultForSaveNewBook(response, expectedErrorDetails);
+        assertSql.assertBookNotExist(bookTitle);
     }
 }

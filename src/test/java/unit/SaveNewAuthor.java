@@ -1,6 +1,7 @@
 package unit;
 
 import static steps.request_steps.ApiMethods.authorizationApiMethod;
+import static steps.specifications.RequestSpecifications.requestSpecificationSaveNewAuthor;
 import static utils.DateGenerator.generateDate;
 import static utils.StringGenerator.generateString;
 
@@ -15,13 +16,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import steps.asserts.AssertSaveNewAuthor;
-import steps.specifications.RequestSpecifications;
+import steps.asserts.AssertSql;
 
 @Epic("Post method testing")
 @Story("Saving a new author")
 public class SaveNewAuthor {
 
     private final AssertSaveNewAuthor assertSaveNewAuthor = new AssertSaveNewAuthor();
+    private final AssertSql assertSql = new AssertSql();
     private static AuthorizationResponse authorizationResponse;
 
     @BeforeAll
@@ -37,10 +39,12 @@ public class SaveNewAuthor {
         SaveNewAuthorRequest authorRequest = new SaveNewAuthorRequest(generateString(8),
             generateString(8), generateString(8), generateDate());
 
-        SaveNewAuthorResponse authorResponse = RequestSpecifications
-            .requestSpecificationSaveNewAuthor(authorizationResponse, authorRequest, 201,
-                "authorId");
+        SaveNewAuthorResponse authorResponse = requestSpecificationSaveNewAuthor(
+            authorizationResponse, authorRequest, 201, "authorId");
+
+        Long authorID = authorResponse.getAuthorId();
 
         assertSaveNewAuthor.assertionSavingNewAuthor(authorResponse);
+        assertSql.assertAuthorExist(authorRequest, authorID);
     }
 }

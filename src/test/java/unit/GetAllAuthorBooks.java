@@ -3,6 +3,8 @@ package unit;
 import static steps.request_steps.ApiMethods.authorizationApiMethod;
 import static steps.request_steps.ApiMethods.saveNewAuthorApiMethod;
 import static steps.request_steps.ApiMethods.saveNewBookApiMethod;
+import static steps.specifications.RequestSpecifications.requestSpecificationGetAllAuthorBooksNegativeResult;
+import static steps.specifications.RequestSpecifications.requestSpecificationGetAllAuthorBooksPositiveResult;
 import static utils.DateGenerator.generateDate;
 import static utils.StringGenerator.generateString;
 
@@ -32,13 +34,14 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import steps.asserts.AssertGetAllAuthorBooks;
 import steps.asserts.AssertNegativeResult;
-import steps.specifications.RequestSpecifications;
+import steps.asserts.AssertSql;
 
 @Epic("Get method testing")
 @Story("Getting all the author's books")
 public class GetAllAuthorBooks {
 
     private final AssertGetAllAuthorBooks getAllAuthorBooks = new AssertGetAllAuthorBooks();
+    private final AssertSql assertSql = new AssertSql();
     private final AssertNegativeResult assertNegativeResult = new AssertNegativeResult();
     private static AuthorizationResponse authorizationResponse;
     private static SaveNewAuthorRequest authorRequest;
@@ -83,12 +86,12 @@ public class GetAllAuthorBooks {
     @DisplayName("Getting all the author's books")
     @Description("Should return list books of the author with status code 200")
     public void gettingAllAuthorBooks() {
-        List<GetAllAuthorBooksResponse> books = RequestSpecifications
-            .requestSpecificationGetAllAuthorBooksPositiveResult(authorizationResponse,
-                String.valueOf(authorId), 200);
+        List<GetAllAuthorBooksResponse> books = requestSpecificationGetAllAuthorBooksPositiveResult(
+            authorizationResponse, String.valueOf(authorId), 200);
 
         getAllAuthorBooks.assertionGettingAllAuthorBooksPositiveResult(books, bookTitle, timeStamp,
             authorId, authorRequest);
+        assertSql.assertBookListExist(books, authorId, timeStamp);
     }
 
     @Test
@@ -96,11 +99,11 @@ public class GetAllAuthorBooks {
     @DisplayName("Getting all the author's books from empty list")
     @Description("Should return empty list books of the author with status code 200")
     public void gettingAllAuthorBooksEmptyList() {
-        List<GetAllAuthorBooksResponse> books = RequestSpecifications
-            .requestSpecificationGetAllAuthorBooksPositiveResult(authorizationResponse,
-                String.valueOf(authorId), 200);
+        List<GetAllAuthorBooksResponse> books = requestSpecificationGetAllAuthorBooksPositiveResult(
+            authorizationResponse, String.valueOf(authorId), 200);
 
         getAllAuthorBooks.assertionGettingAllAuthorBooksEmptyList(books);
+        assertSql.assertBookListEmpty(authorId);
     }
 
     static Stream<Arguments> argsProviderFactory() {
@@ -109,7 +112,6 @@ public class GetAllAuthorBooks {
                 "99999",
                 400,
                 1004,
-                "Валидация не пройдена",
                 "Указанный автор не существует в таблице",
                 "Getting all the author's books by a non-existent author"
             ),
@@ -117,28 +119,24 @@ public class GetAllAuthorBooks {
                 " ",
                 400,
                 1001,
-                "Валидация не пройдена",
                 "Некорректный обязательный параметр",
                 "Getting all the author's books with empty authorId parameter"
             )
         );
     }
 
-    @ParameterizedTest(name = "{5}")
+    @ParameterizedTest(name = "{4}")
     @MethodSource("argsProviderFactory")
     @Tag("NegativeTest")
     @DisplayName("Getting all the author's books with different request and response parameters")
     @Description("Should return error message and a status code 400")
     public void gettingAllAuthorBooksParameterizedTest(String authorId, int expectedStatusCode,
-        Integer expectedErrorCode, String expectedErrorMessage, String expectedErrorDetails,
-        String testName) {
-        NegativeResponseForAllModels response = RequestSpecifications
-            .requestSpecificationGetAllAuthorBooksNegativeResult(authorizationResponse, authorId,
-                expectedStatusCode);
+        Integer expectedErrorCode, String expectedErrorDetails, String testName) {
+        NegativeResponseForAllModels response = requestSpecificationGetAllAuthorBooksNegativeResult(
+            authorizationResponse, authorId, expectedStatusCode);
 
-        assertNegativeResult.assertionNegativeResult(response,
-            expectedErrorCode,
-            expectedErrorMessage,
-            expectedErrorDetails);
+        assertNegativeResult.assertionNegativeResultForGetAllAuthorBooks(response,
+            expectedErrorCode, expectedErrorDetails);
+        assertSql.assertBookListEmpty(Long.valueOf(authorId));
     }
 }

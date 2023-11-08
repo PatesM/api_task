@@ -1,4 +1,4 @@
-package steps.data_base_steps;
+package steps.data_base_steps.book_table;
 
 import static configurations.LibraryDatabaseConfiguration.getSession;
 
@@ -8,15 +8,15 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
 
-public class SqlMethods {
+public class SqlMethodsBookTable {
 
     Session session;
 
-    public SqlMethods() {
+    public SqlMethodsBookTable() {
         session = getSession();
     }
 
-    public List<BookTable> findAll() {
+    public List<BookTable> findAllBooks() {
         final String hql = """
             SELECT * FROM book
             """;
@@ -24,7 +24,7 @@ public class SqlMethods {
         return session.createNativeQuery(hql, BookTable.class).getResultList();
     }
 
-    public void deleteAll() {
+    public void deleteAllBooks() {
         final String hql = "DELETE FROM book";
 
         Transaction transaction = session.beginTransaction();
@@ -32,7 +32,7 @@ public class SqlMethods {
         transaction.commit();
     }
 
-    public void deleteBook(String bookTitle) {
+    public void deleteBookByTitle(String bookTitle) {
         final String hql = """
             DELETE FROM book 
             where book_title = :bookTitle
@@ -58,7 +58,7 @@ public class SqlMethods {
         transaction.commit();
     }
 
-    public List<BookTable> findBook(String bookTitle) {
+    public List<BookTable> findBookByTitle(String bookTitle) {
         final String hql = """
             SELECT * FROM book 
             WHERE book_title = :bookTitle
@@ -66,6 +66,17 @@ public class SqlMethods {
 
         NativeQuery<BookTable> nativeQuery = session.createNativeQuery(hql, BookTable.class);
         nativeQuery.setParameter("bookTitle", bookTitle);
+        return nativeQuery.getResultList();
+    }
+
+    public List<BookTable> findBookByAuthorId(Long authorId) {
+        final String hql = """
+            SELECT * FROM book 
+            WHERE author_id = :authorId
+            """;
+
+        NativeQuery<BookTable> nativeQuery = session.createNativeQuery(hql, BookTable.class);
+        nativeQuery.setParameter("authorId", authorId);
         return nativeQuery.getResultList();
     }
 }
